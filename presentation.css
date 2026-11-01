@@ -112,12 +112,11 @@
   min-width: 0;
 }
 .presenting .score-area {
-  min-height: 0;
+  --score-max-width: clamp(54vh, calc(100vh - 320px), 70vh);
   padding: 0;
 }
-.presenting #score {
-  height: auto;
-  min-height: clamp(115px, 22vh, 320px);
+.presenting .score-caption {
+  margin-bottom: 0;
 }
 .presenting #note-list {
   font-size: clamp(13px, 1.25vw, 26px);
@@ -185,12 +184,6 @@
   }
   .presenting .notation-body {
     grid-template-columns: minmax(0, 1fr) minmax(0, 38%);
-  }
-  .presenting .score-area {
-    min-height: 95px;
-  }
-  .presenting #score {
-    min-height: 95px;
   }
   .presenting .section-label {
     letter-spacing: 0.08em;

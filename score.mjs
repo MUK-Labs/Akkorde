@@ -1,5 +1,11 @@
 import { keySignature } from './theory.mjs';
 
+// The octave shifts in displayPosition keep every MIDI pitch within this frame,
+// including ledger lines, accidentals and octave brackets.
+const STAFF_WIDTH = 420;
+const FRAME_TOP = -54;
+const FRAME_BOTTOM = 200;
+
 // One staff space is 10 logical pixels, or 250 units in the engraving outlines.
 const SPACE = 10;
 const STEP = SPACE / 2;
@@ -160,10 +166,7 @@ function drawGroup(svg, group, anchor, clef, shift) {
       line(svg, x + textWidth + 2, end, bracketY, bracketY, ink, 0.8).setAttribute('stroke-dasharray', '2 2');
       line(svg, end, end, bracketY, bracketY + (up ? 4 : -4), ink, 0.8);
     }
-    minY = Math.min(minY, y - 12);
-    maxY = Math.max(maxY, y + 2);
   }
-  return [minY, maxY];
 }
 
 export function renderScore(svg, notes, { tonic = 'C', mode = 'major', lang = 'en' } = {}) {
@@ -197,7 +200,7 @@ export function renderScore(svg, notes, { tonic = 'C', mode = 'major', lang = 'e
   const start = 78 + signature.steps.length * 11;
   const widths = columns.map((c) => c.right - c.left);
   const needed = widths.reduce((sum, w) => sum + w, 0);
-  const width = Math.max(420, start + needed + 32 * (columns.length + 1) + 10);
+  const width = Math.max(STAFF_WIDTH, start + needed + 32 * (columns.length + 1) + 10);
   for (const [name, s] of Object.entries(staff)) {
     for (let row = 0; row < 5; row++) {
       const y = s.top + row * SPACE;
@@ -214,17 +217,15 @@ export function renderScore(svg, notes, { tonic = 'C', mode = 'major', lang = 'e
 
   const gap = (width - 10 - start - needed) / (columns.length + 1);
   let cursor = start + gap;
-  let top = 15;
-  let bottom = 162;
   for (const col of columns) {
     for (const [clef, group] of col.groups) {
-      const [low, high] = drawGroup(svg, group, cursor - col.left, clef, group.notes[0].shift);
-      top = Math.min(top, low - 5);
-      bottom = Math.max(bottom, high + 5);
+      drawGroup(svg, group, cursor - col.left, clef, group.notes[0].shift);
     }
     cursor += col.right - col.left + gap;
   }
-  svg.setAttribute('viewBox', `0 ${top} ${width} ${bottom - top}`);
+  // Unusually wide voicings extend horizontally at the same staff spacing.
+  svg.style.setProperty('--score-span', width / STAFF_WIDTH);
+  svg.setAttribute('viewBox', `0 ${FRAME_TOP} ${width} ${FRAME_BOTTOM - FRAME_TOP}`);
 }
 // Outlines from Steinberg's Bravura (SMuFL), OTF blob a6952f92d2d04de6e5ed961251b228fd25f56d93.
 // https://github.com/steinbergmedia/bravura — license for the following outlines below.

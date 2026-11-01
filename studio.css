@@ -16,6 +16,9 @@
 * {
   box-sizing: border-box;
 }
+html {
+  scrollbar-gutter: stable;
+}
 body {
   margin: 0;
 }
@@ -313,6 +316,7 @@ h1 {
   margin: 3px 0 12px;
 }
 .staff-column {
+  align-self: start;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -329,17 +333,15 @@ h1 {
   max-width: 24ch;
 }
 .score-area {
-  flex: 1;
-  min-height: 150px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 5px 0 0;
+  --score-max-width: 440px;
+  overflow-x: auto;
+  padding-top: 5px;
 }
 .score-area svg {
   display: block;
-  width: 100%;
-  height: 155px;
+  width: calc(min(100%, var(--score-max-width)) * var(--score-span, 1));
+  height: auto;
+  margin-inline: auto;
   --score-ink: #34473a;
   --score-rule: #98a59a;
   --score-note: #294b3c;
@@ -763,8 +765,8 @@ footer .icon {
     margin-top: 46px;
     margin-bottom: 31px;
   }
-  .score-area svg {
-    height: 180px;
+  .score-area {
+    --score-max-width: 510px;
   }
   .piano {
     height: 135px;
@@ -788,8 +790,8 @@ footer .icon {
     flex-direction: column;
     gap: 2px;
   }
-  .score-area svg {
-    height: 145px;
+  .score-area {
+    --score-max-width: 410px;
   }
   .piano-tools {
     gap: 6px;
@@ -872,10 +874,7 @@ footer .icon {
     grid-template-columns: 1fr;
   }
   .score-area {
-    min-height: 138px;
-  }
-  .score-area svg {
-    height: 139px;
+    --score-max-width: 395px;
   }
   .interval-strip {
     flex-direction: row;
