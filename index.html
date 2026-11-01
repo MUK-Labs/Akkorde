@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f7f7f2" />
+    <meta
+      name="description"
+      content="A live harmony studio for MIDI and on-screen piano. Explore intervals, jazz chord symbols, scale degrees and harmonic functions in German, English and Spanish."
+    />
+    <link rel="icon" href="./mark.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./studio.css" />
+    <title>Akkorde · MUK Labs</title>
+  </head>
+  <body>
+    <svg aria-hidden="true" class="sprite" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <symbol id="ico-book" viewBox="0 0 24 24">
+          <path
+            d="M12 6.2C9 4.4 5.6 4.3 2.5 5v14c3.1-.7 6.5-.6 9.5 1.2 3-1.8 6.4-1.9 9.5-1.2V5c-3.1-.7-6.5-.6-9.5 1.2Zm0 0v14"
+          />
+        </symbol>
+        <symbol id="ico-midi" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M10 20v-3h4v3" />
+          <g fill="currentColor" stroke="none">
+            <circle cx="7.4" cy="11" r="1.1" />
+            <circle cx="9" cy="7.9" r="1.1" />
+            <circle cx="12" cy="6.7" r="1.1" />
+            <circle cx="15" cy="7.9" r="1.1" />
+            <circle cx="16.6" cy="11" r="1.1" />
+          </g>
+        </symbol>
+        <symbol id="ico-down" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" /></symbol>
+        <symbol id="ico-up-right" viewBox="0 0 24 24"><path d="M6 18 18 6M8 6h10v10" /></symbol>
+        <symbol id="ico-sliders" viewBox="0 0 24 24">
+          <path d="M3 7h8m4 0h6M3 17h3m4 0h11" />
+          <circle cx="13" cy="7" r="2" />
+          <circle cx="8" cy="17" r="2" />
+        </symbol>
+        <symbol id="ico-sound" viewBox="0 0 24 24">
+          <path d="m4 9 4 0 5-4v14l-5-4H4zM16 9a5 5 0 0 1 0 6m2-9a9 9 0 0 1 0 12" />
+        </symbol>
+        <symbol id="ico-mute" viewBox="0 0 24 24">
+          <path d="m4 9 4 0 5-4v14l-5-4H4zm12 0 5 6m0-6-5 6" />
+        </symbol>
+        <symbol id="ico-clear" viewBox="0 0 24 24">
+          <path d="m4 12 5-7h11v14H9l-5-7Zm7-3 5 6m0-6-5 6" />
+        </symbol>
+        <symbol id="ico-left" viewBox="0 0 24 24"><path d="m14 6-6 6 6 6" /></symbol>
+        <symbol id="ico-right" viewBox="0 0 24 24"><path d="m10 6 6 6-6 6" /></symbol>
+        <symbol id="ico-piano" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="16" rx="2" />
+          <path d="M9 12v8m6-8v8M7 4v8h3V4m4 0v8h3V4" />
+        </symbol>
+      </defs>
+    </svg>
+    <header class="masthead">
+      <div class="wrap mast-inner">
+        <a class="brand" href="./" aria-label="Akkorde"
+          ><img src="./mark.svg" width="37" height="37" alt="" /><span>Akkorde</span></a
+        >
+        <div class="mast-tools">
+          <a class="guide-link" id="guide-link" href="./reference.html"
+            ><svg class="icon"><use href="#ico-book" /></svg><span data-i="guide">Chord guide</span></a
+          ><span class="mast-divider"></span>
+          <div id="languages" class="languages" role="group" aria-label="Language">
+            <button data-lang="de" lang="de" aria-label="Deutsch">DE</button
+            ><button data-lang="en" lang="en" aria-label="English">EN</button
+            ><button data-lang="es" lang="es" aria-label="Español">ES</button>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="wrap">
+      <div class="intro">
+        <div>
+          <div class="overline">
+            <span class="bar-mark" aria-hidden="true"><i></i><i></i><i></i></span>MUK LABS
+            <span class="over-slash">/</span> <span data-i="studio">HARMONY STUDIO</span>
+          </div>
+          <h1 data-i="title">Chord explorer</h1>
+          <p data-i="subtitle">Play a chord to explore its notes, intervals and harmonic function.</p>
+        </div>
+        <div class="device">
+          <button id="connect" class="primary">
+            <svg class="icon"><use href="#ico-midi" /></svg><span id="connect-label">Connect MIDI</span>
+          </button>
+          <div id="midi-state" role="status"></div>
+          <label id="port-row" hidden
+            ><span class="sr" data-i="port">MIDI input</span
+            ><select id="ports"></select
+          ></label>
+        </div>
+      </div>
+      <div class="workspace">
+        <section class="panel notation">
+          <div class="card-head">
+            <div class="section-label">
+              <b>01</b>
+              <h2 data-i="staff">Grand staff</h2>
+            </div>
+            <label class="key-control"
+              ><span data-i="key">Key</span
+              ><select id="key" aria-label="Key"></select
+              ><svg class="icon"><use href="#ico-down" /></svg
+            ></label>
+          </div>
+          <div class="score-area"><svg id="score" xmlns="http://www.w3.org/2000/svg" role="img"></svg></div>
+          <div class="score-caption">
+            <span class="input-badge" id="source"></span><span id="note-list"></span>
+          </div>
+          <div id="interval-strip" class="interval-strip">
+            <div class="strip-heading">
+              <span data-i="intervals">Intervals</span><span id="interval-count"></span>
+            </div>
+            <div class="intervals" id="intervals"></div>
+          </div>
+        </section>
+        <section class="analysis" aria-labelledby="reading-title">
+          <div class="arcs" aria-hidden="true"></div>
+          <div class="card-head">
+            <div class="section-label">
+              <b>02</b>
+              <h2 id="reading-title" data-i="reading">Harmonic analysis</h2>
+            </div>
+            <details class="display">
+              <summary id="display-summary" aria-label="Display options">
+                <svg class="icon"><use href="#ico-sliders" /></svg>
+              </summary>
+              <div class="display-list">
+                <strong data-i="display">Show analyses</strong
+                ><label><input type="checkbox" data-view="intervals" /><span data-i="intervals"></span></label
+                ><label><input type="checkbox" data-view="jazz" /><span data-i="jazz"></span></label
+                ><label><input type="checkbox" data-view="degree" /><span data-i="degree"></span></label
+                ><label><input type="checkbox" data-view="function" /><span data-i="function"></span></label>
+              </div>
+            </details>
+          </div>
+          <div class="chord-block">
+            <a id="chord-name" href="./reference.html"></a>
+            <div id="quality"></div>
+          </div>
+          <div class="readings" id="readings"></div>
+          <p class="alternate" id="alternate" hidden></p>
+        </section>
+      </div>
+      <section class="panel keyboard">
+        <div class="piano-head">
+          <div class="section-label">
+            <b>03</b>
+            <h2 data-i="keyboard">Piano keyboard</h2>
+          </div>
+          <div class="piano-tools">
+            <button id="hold" class="hold" aria-pressed="true">
+              <span class="switch" aria-hidden="true"></span><span data-i="hold">Hold notes</span></button
+            ><span class="tool-divider"></span
+            ><button id="sound" class="tool" aria-pressed="false">
+              <svg class="icon"><use href="#ico-mute" /></svg><span data-i="sound">Sound</span></button
+            ><button id="clear" class="tool">
+              <svg class="icon"><use href="#ico-clear" /></svg><span data-i="clear">Clear</span>
+            </button>
+          </div>
+        </div>
+        <div class="piano-scroll" id="piano-scroll">
+          <div id="piano" class="piano" role="group" aria-label="Piano"></div>
+        </div>
+        <div class="piano-caption">
+          <div class="keyboard-tip">
+            <svg class="icon"><use href="#ico-piano" /></svg><span id="piano-hint"></span>
+          </div>
+          <div class="range-tools">
+            <button id="octave-down" class="icon-button" aria-label="Lower octave">
+              <svg class="icon"><use href="#ico-left" /></svg></button
+            ><span id="range"></span
+            ><button id="octave-up" class="icon-button" aria-label="Higher octave">
+              <svg class="icon"><use href="#ico-right" /></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+      <section class="examples">
+        <h2 data-i="examples">Try a voicing</h2>
+        <div id="examples"></div>
+      </section>
+    </main>
+    <footer class="wrap">
+      <span>Akkorde <span class="foot-dot">/</span> MUK Labs</span
+      ><a href="https://github.com/MUK-Labs/Akkorde"
+        >GitHub <svg class="icon"><use href="#ico-up-right" /></svg
+      ></a>
+    </footer>
+    <noscript
+      >Enable JavaScript to use Akkorde. Für Akkorde bitte JavaScript aktivieren. Activa JavaScript para usar
+      Akkorde.</noscript
+    >
+    <script type="module" src="./studio.mjs"></script>
+  </body>
+</html>

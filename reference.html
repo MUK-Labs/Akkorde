@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f6f4ed" />
+    <title>Akkorde · Reference</title>
+    <link rel="icon" href="./mark.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./reference.css" />
+  </head>
+  <body>
+    <header class="mast">
+      <div class="mast-inner">
+        <a class="wordmark" id="home" href="./index.html" aria-label="Akkorde">
+          <img src="./mark.svg" width="34" height="34" alt="" />
+          Akkorde
+        </a>
+        <div class="mast-actions">
+          <a id="back" class="back" href="./index.html"></a>
+          <select id="language" aria-label="Language">
+            <option value="de">Deutsch</option>
+            <option value="en">English</option>
+            <option value="es">Español</option>
+          </select>
+        </div>
+      </div>
+    </header>
+    <main class="spread">
+      <div class="title">
+        <p class="eyebrow" id="eyebrow"></p>
+        <h1 id="page-title"></h1>
+        <p id="intro"></p>
+      </div>
+      <div class="columns">
+        <nav id="contents" class="contents"></nav>
+        <article id="entry"></article>
+      </div>
+    </main>
+    <noscript
+      >Für das Nachschlagewerk bitte JavaScript aktivieren. Enable JavaScript to view this reference. Activa
+      JavaScript para consultar esta guía.</noscript
+    >
+    <script type="module" src="./reference.mjs"></script>
+  </body>
+</html>
