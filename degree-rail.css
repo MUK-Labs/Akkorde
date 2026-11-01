@@ -1,0 +1,40 @@
+.degree-rail {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  container-type: inline-size;
+}
+.degree-reading > span:first-child {
+  flex-shrink: 0;
+}
+.degree-reading > .icon {
+  color: var(--gold);
+}
+.reading .value.degree-symbol {
+  --pin: calc((var(--degree-position) - 0.5) * 100cqi / 7);
+  display: block;
+  position: relative;
+  left: var(--pin);
+  width: max-content;
+  font-size: min(22px, calc(145cqi / var(--degree-characters)));
+  white-space: nowrap;
+  /* Center the numeral over its marker and keep longer figures within the rail. */
+  transform: translateX(clamp(calc(-1 * var(--pin)), -50%, calc(100cqi - var(--pin) - 100%)));
+}
+.presenting .reading .value.degree-symbol {
+  font-size: min(clamp(22px, 2.4vw, 54px), calc(145cqi / var(--degree-characters)));
+}
+.degree-markers {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.degree-markers > span {
+  margin-inline: 1.5px;
+  height: 2px;
+  border-radius: 2px;
+  background: #708875;
+}
+.degree-markers .degree-active {
+  background: var(--gold);
+}

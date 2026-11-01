@@ -40,7 +40,11 @@ The grand staff shows sounding pitches with the selected key signature. Two note
 | D–F♯–A–C | C major | D7 | V⁷/V | DD⁷ |
 | E♭–G–B♭–D♭ | A♭ minor | E♭7 | V⁷ | D⁷ |
 
-The display menu lets you toggle intervals, jazz symbols, scale degrees and functional symbols independently. Click any reading to open its explanation with the current key and voicing. The guide retains that context when switching languages, so students can compare the nomenclature for the same example.
+The **scale-degree row** has seven positions from I on the left to VII on the right. Its marker follows the spelled root in the selected key, including chromatically altered roots. In C major, F/A stays in position 4 and shows IV⁶. D7 occupies position 2 and shows V⁷/V.
+
+**Set analysis** below the function shows the sounding pitch classes (C = 0), Forte prime form, distinct interval classes, six-entry interval-class vector and Forte number. It also works on collections with no tonal chord name. For example, F–A–C gives {0, 5, 9}, prime form [0, 3, 7], interval classes {3, 4, 5}, vector ⟨0, 0, 1, 1, 1, 0⟩ and Forte **3-11**. It uses transposition and inversion equivalence, with octave doublings counted once. Click the reading to examine the current set. [Open the worked set example](https://muk-labs.github.io/Akkorde/reference.html?lang=en&topic=sets&notes=53,57,60)
+
+The display menu lets you toggle intervals, jazz symbols, scale degrees, functional symbols and set analysis independently. Click any reading to open its explanation with the current key and voicing. The guide retains that context when switching languages, so students can compare the nomenclature for the same example.
 
 The catalogue covers 41 chord structures, including suspended chords, sevenths, added notes, extended and altered chords. The analyser compares pitch classes, bass and key to select a reading. Equally complete alternatives are listed when present. Common omissions are allowed in some extended chords. Rootless voicings and progressions require further musical context. A dash in the function row means that the analyser has no functional label for the current reading.
 

@@ -1,6 +1,7 @@
 import { analyze, keyName, tonics } from './theory.mjs';
+import { analyzeSet } from './set-theory.mjs';
 
-const topics = ['guide', 'chord', 'intervals', 'degree', 'function', 'jazz'];
+const topics = ['guide', 'chord', 'intervals', 'degree', 'function', 'jazz', 'sets'];
 const text = {
   en: {
     ref: 'Reference',
@@ -33,6 +34,7 @@ const text = {
       'Scale degrees',
       'Harmonic functions',
       'Jazz symbols',
+      'Set analysis',
     ],
     intro: [
       'Follow one voicing through the different ways musicians describe it.',
@@ -41,6 +43,7 @@ const text = {
       'Find the root of a chord within the scale of the selected key.',
       'Interpret the chord’s role in relation to a tonal centre.',
       'Read the root, quality, extensions and bass from a lead-sheet symbol.',
+      'Read the same notes as a pitch-class set and compare their interval content.',
     ],
     guideHead: 'One voicing, several readings',
     guide: [
@@ -64,7 +67,8 @@ const text = {
     degreeHead: 'Root and key',
     degree: [
       'Start on the tonic and count scale steps up to the chord root. In C major, C–D–E–F places F on IV. Uppercase and lowercase distinguish major and minor triads. A ° marks a diminished triad.',
-      'An applied dominant names its destination after a slash. In C major, D7 → G reads V⁷/V → V. Inversions can be shown by figures, such as I⁶ for a tonic triad with the third in the bass.',
+      'The seven positions run from I on the left to VII on the right. The root fixes the position. F/A has A in the bass and F as its root, so it stays in the fourth position in C major.',
+      'An applied dominant names its destination after a slash. In C major, D7 reads V⁷/V in the second position. Its root is D and its destination is G. Inversions can be shown by figures, such as I⁶ for a tonic triad with the third in the bass.',
     ],
     fnHead: 'A function implies a context',
     fn: [
@@ -83,6 +87,21 @@ const text = {
     naming: 'Note names',
     namingBody:
       'German H corresponds to English B and Spanish si. German B corresponds to B♭ and si♭. In Spanish, note names use do, re, mi, fa, sol, la, si. International lead-sheet symbols generally retain letter names.',
+    pcSet: 'Pitch-class set',
+    icSet: 'Interval classes present',
+    vector: 'Interval-class vector',
+    prime: 'Prime form',
+    forte: 'Forte number',
+    setHead: 'From pitches to a set class',
+    setText: [
+      'Number the twelve pitch classes from C = 0 to B = 11. Each semitone adds one. Octave doublings and enharmonic spellings count once, so C–E–G–C gives {0, 4, 7}.',
+      'A set class groups sets related by transposition or pitch-class inversion. Inversion mirrors the pitches around an axis. C major {0, 4, 7} and C minor {0, 3, 7} both have prime form [0, 3, 7]. In their Forte number 3-11, the 3 counts pitch classes and the 11 identifies the entry among the three-note classes.',
+    ],
+    vectorText:
+      'For each pair of different pitch classes, count the shorter distance around the octave in semitones. C to G spans seven semitones upwards or five downwards, so it contributes one pair to IC 5. The six vector entries count how often IC 1 through IC 6 occur.',
+    zHead: 'Compare a Z-related pair',
+    zText:
+      'Try 4-Z15 and 4-Z29 below. Each tetrachord contains every interval class exactly once. Their shared vector ⟨1, 1, 1, 1, 1, 1⟩ and distinct prime forms illustrate the Z relation.',
     ex: [
       'F in C major',
       'F in F major',
@@ -93,6 +112,10 @@ const text = {
       'C dominant ninth',
       'Minor third',
       'Major ninth',
+      'C major',
+      'C minor',
+      '4-Z15',
+      '4-Z29',
     ],
   },
   de: {
@@ -119,7 +142,15 @@ const text = {
     none: 'Keine Töne',
     other: 'Weitere mögliche Deutung',
     indeterminate: 'Offen',
-    topic: ['Harmonik lesen', 'Akkordaufbau', 'Intervalle', 'Stufen', 'Funktionen', 'Jazzsymbole'],
+    topic: [
+      'Harmonik lesen',
+      'Akkordaufbau',
+      'Intervalle',
+      'Stufen',
+      'Funktionen',
+      'Jazzsymbole',
+      'Set-Analyse',
+    ],
     intro: [
       'Ein Klangbeispiel aus verschiedenen musiktheoretischen Blickwinkeln betrachten.',
       'Die Töne eines Akkords auf seinen Grundton beziehen.',
@@ -127,6 +158,7 @@ const text = {
       'Den Akkordgrundton auf die gewählte Tonart beziehen.',
       'Die Rolle eines Akkords im Verhältnis zur Tonika deuten.',
       'Grundton, Klanggeschlecht, Erweiterungen und Basston am Akkordsymbol ablesen.',
+      'Die gespielten Töne als Tonklassenmenge lesen und ihren Intervallgehalt vergleichen.',
     ],
     guideHead: 'Ein Klang, mehrere Lesarten',
     guide: [
@@ -150,7 +182,8 @@ const text = {
     degreeHead: 'Grundton und Tonart',
     degree: [
       'Zähle vom Grundton der Tonart bis zum Akkordgrundton. In C-Dur führt C–D–E–F zur IV. Stufe. Groß- und Kleinschreibung unterscheiden hier Dur- und Molldreiklänge. ° bezeichnet einen verminderten Dreiklang.',
-      'Bei einer Zwischendominante nennt die Stufe nach dem Schrägstrich den Zielakkord. In C-Dur liest sich D7 → G als V⁷/V → V. Ziffern können die Umkehrung anzeigen, etwa I⁶ für die I. Stufe mit der Terz im Bass.',
+      'Die sieben Positionen reichen von I links bis VII rechts. Der Akkordgrundton bestimmt die Position. Bei F/A liegt A im Bass. Der Grundton bleibt F, deshalb steht das Symbol in C-Dur weiterhin an vierter Stelle.',
+      'Bei einer Zwischendominante nennt die Stufe nach dem Schrägstrich den Zielakkord. In C-Dur erscheint D7 als V⁷/V an zweiter Stelle. Sein Grundton ist D, sein Zielakkord G-Dur. Ziffern können die Umkehrung anzeigen, etwa I⁶ für die I. Stufe mit der Terz im Bass.',
     ],
     fnHead: 'Die Funktion im Zusammenhang hören',
     fn: [
@@ -169,6 +202,21 @@ const text = {
     naming: 'Tonnamen',
     namingBody:
       'Das deutsche H entspricht dem englischen B und dem spanischen si. Das deutsche B entspricht B♭ und si♭. Spanische Tonnamen lauten do, re, mi, fa, sol, la, si. Internationale Leadsheets verwenden meist die englischen Buchstabennamen.',
+    pcSet: 'Tonklassenmenge',
+    icSet: 'Enthaltene Intervallklassen',
+    vector: 'Intervallklassenvektor',
+    prime: 'Primform',
+    forte: 'Forte-Nummer',
+    setHead: 'Von den Tönen zur Mengenklasse',
+    setText: [
+      'Die zwölf Tonklassen werden von C = 0 bis H = 11 nummeriert. Jeder Halbtonschritt erhöht die Zahl um eins. Oktavverdopplungen und enharmonisch verwechselte Töne zählen jeweils nur einmal. C–E–G–C ergibt so {0, 4, 7}.',
+      'Zu einer Mengenklasse gehören alle Mengen, die durch Transposition oder Spiegelung der Tonklassen ineinander überführt werden können. C-Dur {0, 4, 7} und c-Moll {0, 3, 7} haben dieselbe Primform [0, 3, 7]. In der Forte-Nummer 3-11 gibt die 3 die Anzahl der Tonklassen an. Die 11 bezeichnet den Eintrag im Katalog der dreitönigen Mengenklassen.',
+    ],
+    vectorText:
+      'Für jedes Tonklassenpaar zählt der kürzere Abstand innerhalb der Oktave. Von C nach G sind es sieben Halbtöne aufwärts oder fünf abwärts. Das Paar gehört deshalb zur Intervallklasse 5. Die sechs Einträge des Vektors geben an, wie oft die Intervallklassen 1 bis 6 vorkommen.',
+    zHead: 'Z-verwandte Mengen vergleichen',
+    zText:
+      'Vergleiche unten 4-Z15 und 4-Z29. Beide Viertonmengen enthalten jede Intervallklasse genau einmal. Ihr gemeinsamer Vektor ⟨1, 1, 1, 1, 1, 1⟩ und ihre unterschiedlichen Primformen kennzeichnen die Z-Verwandtschaft.',
     ex: [
       'F in C-Dur',
       'F in F-Dur',
@@ -179,6 +227,10 @@ const text = {
       'C-Dominantnonakkord',
       'Kleine Terz',
       'Große None',
+      'C-Dur',
+      'c-Moll',
+      '4-Z15',
+      '4-Z29',
     ],
   },
   es: {
@@ -212,6 +264,7 @@ const text = {
       'Grados',
       'Funciones armónicas',
       'Cifrado de jazz',
+      'Análisis de conjuntos',
     ],
     intro: [
       'Explora distintas maneras de describir una misma disposición de notas.',
@@ -220,6 +273,7 @@ const text = {
       'Sitúa la fundamental del acorde en la escala de la tonalidad elegida.',
       'Interpreta el papel del acorde con respecto a la tónica.',
       'Lee la fundamental, el tipo de acorde, las extensiones y el bajo en el cifrado americano.',
+      'Lee las notas como un conjunto de clases de altura y compara su contenido interválico.',
     ],
     guideHead: 'Un acorde, varias lecturas',
     guide: [
@@ -243,7 +297,8 @@ const text = {
     degreeHead: 'La fundamental y la tonalidad',
     degree: [
       'Cuenta los grados de la escala desde la tónica hasta la fundamental del acorde. En do mayor, do–re–mi–fa sitúa fa en el IV grado. Las mayúsculas y minúsculas distinguen las tríadas mayores y menores. ° indica una tríada disminuida.',
-      'En una dominante secundaria, el número tras la barra indica el grado de destino. En do mayor, D7 → G se lee V⁷/V → V. La inversión puede indicarse con cifras, como I⁶ para la tríada de tónica con la tercera en el bajo.',
+      'Las siete posiciones van del I a la izquierda al VII a la derecha. La fundamental fija la posición. En F/A, la es el bajo y fa la fundamental, de modo que el símbolo sigue en la cuarta posición en do mayor.',
+      'En una dominante secundaria, el número tras la barra indica el grado de destino. En do mayor, D7 se cifra V⁷/V y ocupa la segunda posición. Su fundamental es re y su acorde de destino es sol mayor. La inversión puede indicarse con cifras, como I⁶ para la tríada de tónica con la tercera en el bajo.',
     ],
     fnHead: 'Escuchar la función en su contexto',
     fn: [
@@ -262,6 +317,21 @@ const text = {
     naming: 'Nombres de las notas',
     namingBody:
       'El si natural se escribe H en alemán y B en inglés. El si♭ se escribe B en alemán y B♭ en inglés. En español se usan do, re, mi, fa, sol, la y si. El cifrado americano suele conservar los nombres con letras.',
+    pcSet: 'Conjunto de clases de altura',
+    icSet: 'Clases interválicas presentes',
+    vector: 'Vector interválico',
+    prime: 'Forma prima',
+    forte: 'Número de Forte',
+    setHead: 'De las notas a la clase de conjunto',
+    setText: [
+      'Las doce clases de altura se numeran desde do = 0 hasta si = 11, sumando una unidad por semitono. Las duplicaciones de octava y las notas enarmónicas cuentan una sola vez. Así, do–mi–sol–do da {0, 4, 7}.',
+      'Una clase de conjunto reúne los conjuntos relacionados por transposición o por inversión de sus clases de altura alrededor de un eje. Do mayor {0, 4, 7} y do menor {0, 3, 7} tienen la misma forma prima [0, 3, 7]. En su número de Forte 3-11, el 3 cuenta las clases de altura y el 11 identifica la entrada en el catálogo de conjuntos de tres notas.',
+    ],
+    vectorText:
+      'Para cada par de clases de altura se toma la distancia más corta dentro de la octava. De do a sol hay siete semitonos al subir o cinco al bajar, así que este par pertenece a la clase interválica 5. Las seis entradas del vector cuentan las apariciones de las clases interválicas de la 1 a la 6.',
+    zHead: 'Comparar dos conjuntos en relación Z',
+    zText:
+      'Compara 4-Z15 y 4-Z29 con los ejemplos de abajo. Cada tetracordo contiene una vez cada clase interválica. Comparten el vector ⟨1, 1, 1, 1, 1, 1⟩ y tienen formas primas distintas. Esta es la relación Z.',
     ex: [
       'Fa mayor en do mayor',
       'Fa mayor en fa mayor',
@@ -272,6 +342,10 @@ const text = {
       'Novena de dominante sobre do',
       'Tercera menor',
       'Novena mayor',
+      'Do mayor',
+      'Do menor',
+      '4-Z15',
+      '4-Z29',
     ],
   },
 };
@@ -305,6 +379,7 @@ for (const side of ['from', 'to']) {
 }
 const analysis = analyze(notes, tonic, mode, lang);
 const chord = analysis.chord;
+const pitchSet = analyzeSet(notes);
 const pitch = (n) => n.name + n.octave;
 const byMidi = new Map(analysis.notes.map((n) => [n.midi, pitch(n)]));
 
@@ -394,6 +469,7 @@ if (chord) {
     field(t.topic[4], chord.fn || '—', 'function'),
   );
 }
+if (pitchSet) fields.append(field(t.forte, pitchSet.forte, 'sets'));
 snapshot.append(caption, fields);
 entry.append(snapshot);
 
@@ -407,6 +483,10 @@ const exampleData = [
   ['C', [48, 52, 55, 58, 62]],
   ['C', [60, 63]],
   ['C', [60, 74]],
+  ['C', [60, 64, 67]],
+  ['C', [60, 63, 67]],
+  ['C', [60, 61, 64, 66]],
+  ['C', [60, 61, 63, 67]],
 ];
 function examples(ids) {
   const group = el('section', undefined, 'examples');
@@ -416,12 +496,14 @@ function examples(ids) {
     const [key, midis] = exampleData[i];
     const nextTopic = topic === 'guide' ? (i < 2 ? 'degree' : 'function') : topic;
     const q = new URLSearchParams({
-      lang,
+      ...state,
       topic: nextTopic,
       tonic: key,
       mode: 'major',
       notes: midis.join(','),
     });
+    q.delete('from');
+    q.delete('to');
     const a = link('', './reference.html?' + q, 'example-link');
     const arrow = el('span', '↗');
     arrow.setAttribute('aria-hidden', 'true');
@@ -594,6 +676,33 @@ function contextual(kind) {
   return node;
 }
 
+function setSection() {
+  const part = section(t.setHead);
+  if (pitchSet) {
+    const { pitchClasses, primeForm, intervalClasses } = pitchSet;
+    const fields = el('dl', undefined, 'fields');
+    fields.append(
+      field(t.pcSet, '{' + pitchClasses.join(', ') + '}'),
+      field(t.prime, '[' + primeForm.join(', ') + ']'),
+      field(t.icSet, intervalClasses.length ? '{' + intervalClasses.join(', ') + '}' : '∅'),
+    );
+    part.append(fields);
+  }
+  part.append(...t.setText.map((p) => el('p', p)));
+  return part;
+}
+
+function vectorSection() {
+  const part = section(t.vector, [t.vectorText]);
+  if (pitchSet) {
+    const icPrefix = inLang('IC', 'IK', 'CI');
+    const grid = table(pitchSet.intervalVector.map((_, i) => icPrefix + ' ' + (i + 1)));
+    grid.add(pitchSet.intervalVector);
+    part.append(grid.box);
+  }
+  return part;
+}
+
 switch (topic) {
   case 'guide':
     entry.append(section(t.guideHead, t.guide), section(t.naming, [t.namingBody]), examples([0, 1, 3]));
@@ -613,16 +722,35 @@ switch (topic) {
   case 'jazz':
     entry.append(chordSection(), section(t.jazzHead, t.jazz), examples([2, 5, 6]));
     break;
+  case 'sets':
+    entry.append(setSection(), vectorSection(), section(t.zHead, [t.zText]), examples([9, 10, 11, 12]));
+    break;
 }
 
-const readings = {
-  de: [
-    'Open Music Academy · Perspektiven auf Harmonik',
-    'https://openmusic.academy/docs/U4ebkK3nBPKDYzHBBDuqGH/kurzanleitung-perspektiven-auf-harmonik',
-  ],
-  en: ['Puget Sound · Jazz Chord Basics', 'https://musictheory.pugetsound.edu/mt21c/JazzChordBasics.html'],
-  es: ['teoría · Dominantes secundarias', 'https://www.teoria.com/es/referencia/s/secundarias.php'],
-};
+const readings =
+  topic === 'sets'
+    ? {
+        de: ['Christoph Neidhöfer · Set Theory', 'https://storage.gmth.de/zgmth/pdf/530'],
+        en: [
+          'Open Music Theory · Interval-Class Vectors',
+          'https://viva.pressbooks.pub/openmusictheory/chapter/interval-class-vectors/',
+        ],
+        es: [
+          'Pablo Cetta · Principios de estructuración de la altura',
+          'https://repositorio.uca.edu.ar/bitstream/123456789/9167/1/principios-estructuracion-altura-conjuntos.pdf',
+        ],
+      }
+    : {
+        de: [
+          'Open Music Academy · Perspektiven auf Harmonik',
+          'https://openmusic.academy/docs/U4ebkK3nBPKDYzHBBDuqGH/kurzanleitung-perspektiven-auf-harmonik',
+        ],
+        en: [
+          'Puget Sound · Jazz Chord Basics',
+          'https://musictheory.pugetsound.edu/mt21c/JazzChordBasics.html',
+        ],
+        es: ['teoría · Dominantes secundarias', 'https://www.teoria.com/es/referencia/s/secundarias.php'],
+      };
 const further = el('section', undefined, 'further');
 further.append(el('h3', t.sources));
 const sourceList = el('ul', undefined, 'sources');
@@ -634,5 +762,15 @@ const sourceList = el('ul', undefined, 'sources');
   li.append(a);
   sourceList.append(li);
 });
+if (topic === 'sets') {
+  const li = el('li');
+  li.append(
+    link(
+      'music21 · Chord tables (EN)',
+      'https://music21.org/music21docs/moduleReference/moduleChordTables.html',
+    ),
+  );
+  sourceList.append(li);
+}
 further.append(sourceList);
 entry.append(further);

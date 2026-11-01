@@ -123,6 +123,11 @@
 .presenting .section-label {
   font-size: clamp(11px, 1vw, 19px);
 }
+.presenting .analysis .section-label {
+  font-size: clamp(10px, 0.86vw, 17px);
+  letter-spacing: 0.07em;
+  gap: 6px;
+}
 .presenting .input-badge,
 .presenting .strip-heading {
   font-size: clamp(10px, 0.86vw, 16px);
@@ -135,11 +140,15 @@
   font-size: clamp(12px, 1.05vw, 22px);
   line-height: 1.35;
 }
+.presenting .analysis {
+  padding-block: clamp(10px, 1.4vh, 24px);
+}
 .presenting .chord-block {
-  min-height: 70px;
+  min-height: 60px;
+  padding: 6px 0;
 }
 .presenting .chord-block a {
-  font-size: clamp(38px, min(5.6vw, 10vh), 120px);
+  font-size: clamp(32px, min(5.6vw, 7.5vh), 100px);
 }
 .presenting #quality,
 .presenting .alternate,
@@ -147,10 +156,14 @@
   font-size: clamp(13px, 1.28vw, 28px);
 }
 .presenting .reading {
-  min-height: clamp(38px, 7vh, 86px);
+  min-height: clamp(30px, 5.2vh, 70px);
+  padding-block: 3px;
 }
 .presenting .reading .value {
   font-size: clamp(23px, 2.5vw, 56px);
+}
+.presenting .set-facts {
+  font-size: clamp(12px, 1.05vw, 22px);
 }
 .presenting .keyboard {
   margin: 0;
@@ -213,11 +226,30 @@
     padding: 8px 12px;
   }
   .presenting .chord-block {
-    min-height: 46px;
-    padding: 5px 0;
+    min-height: 0;
+    padding: 3px 0;
+  }
+  .presenting .chord-block a {
+    font-size: clamp(24px, 7.5vh, 39px);
+  }
+  .presenting #quality,
+  .presenting .reading > span:first-child {
+    font-size: 11px;
   }
   .presenting .reading {
-    min-height: 28px;
+    min-height: 22px;
+    padding-block: 2px;
+  }
+  .presenting .reading .value {
+    font-size: 18px;
+  }
+  .presenting .set-reading {
+    row-gap: 1px;
+  }
+  .presenting .set-facts {
+    font-size: 11px;
+    line-height: 1.25;
+    row-gap: 1px;
   }
   .presenting .piano {
     height: 17vh;
@@ -225,8 +257,10 @@
   }
   .presenting .analysis .section-label {
     font-size: 10px;
-    letter-spacing: 0.06em;
-    gap: 5px;
+    letter-spacing: 0.02em;
+  }
+  .presenting .analysis .section-label b {
+    display: none;
   }
   .presenting .class-tools {
     gap: 3px;

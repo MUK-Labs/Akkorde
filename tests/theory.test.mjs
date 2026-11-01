@@ -20,6 +20,28 @@ test('direct functions, applied dominants and function changes with the selected
   assert.equal(analyze([55, 59, 62, 66]).chord.degree, 'V(maj7)');
 });
 
+test('scale-degree positions follow the written root in the selected key', () => {
+  const triads = [
+    [60, 64, 67],
+    [62, 65, 69],
+    [64, 67, 71],
+    [65, 69, 72],
+    [67, 71, 74],
+    [69, 72, 76],
+    [71, 74, 77],
+  ];
+  assert.deepEqual(
+    triads.map((notes) => analyze(notes).chord.scaleDegree),
+    [1, 2, 3, 4, 5, 6, 7],
+  );
+  assert.equal(analyze([52, 55, 60]).chord.scaleDegree, 1); // C/E, bass on III
+  assert.equal(analyze([54, 57, 60, 62]).chord.scaleDegree, 2); // D7/F♯ as V⁶₅/V
+  assert.equal(analyze([61, 65, 68]).chord.scaleDegree, 2); // ♭II
+  assert.equal(analyze([54, 57, 60]).chord.scaleDegree, 4); // ♯iv°
+  assert.equal(analyze([53, 57, 60], 'F').chord.scaleDegree, 1);
+  assert.equal(analyze([51, 55, 58, 61], 'Ab', 'minor', 'es').chord.scaleDegree, 5);
+});
+
 test('flat minor key, localized names, standard scientific octave and English jazz in Spanish', () => {
   assert.equal(keySignature('Ab', 'minor'), -7);
   assert.equal(keyName('Ab', 'minor', 'de'), 'as-Moll');

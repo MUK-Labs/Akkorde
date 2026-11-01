@@ -434,8 +434,7 @@ function matches(pcs, bass, key, mode) {
 }
 
 const romans = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
-function romanBase(hit, rootSpell, key, mode) {
-  const step = mod(rootSpell.index - key.index, 7);
+function romanBase(hit, step, key, mode) {
   const offset = mod(hit.root - key.pc);
   const scale = mode === 'minor' ? minorSteps : natural;
   const minorThird = hit.q.members.some((m) => m.token === 'b3');
@@ -457,7 +456,8 @@ function romanBase(hit, rootSpell, key, mode) {
 function tonalReading(hit, rootSpell, key, mode, bass) {
   const { q, root } = hit,
     offset = mod(root - key.pc);
-  const rootDegree = romanBase(hit, rootSpell, key, mode);
+  const step = mod(rootSpell.index - key.index, 7);
+  const rootDegree = romanBase(hit, step, key, mode);
   const inversion = q.members.findIndex((m) => m.pc === mod(bass - root));
   const inv = q.members[inversion]?.token;
   let roman = rootDegree,
@@ -500,7 +500,14 @@ function tonalReading(hit, rootSpell, key, mode, bass) {
     figure = '(' + (suffix === '6' ? 'add6' : suffix) + ')';
     if (inversion > 0 && inv) figure += '/' + unicodeFormula(inv);
   }
-  return { degree: roman + figure + target, rootDegree, fn, inversion, target: target.slice(1) };
+  return {
+    degree: roman + figure + target,
+    scaleDegree: step + 1,
+    rootDegree,
+    fn,
+    inversion,
+    target: target.slice(1),
+  };
 }
 
 function spellHit(hit, key, mode) {

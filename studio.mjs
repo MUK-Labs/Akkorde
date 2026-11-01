@@ -1,4 +1,6 @@
 import { analyze, tonics, keyName } from './theory.mjs';
+import { degreeRail } from './degree-rail.mjs';
+import { analyzeSet } from './set-theory.mjs';
 import { createCircle } from './circle.mjs';
 import { initPresentation } from './presentation.mjs';
 import { renderScore } from './score.mjs';
@@ -19,7 +21,7 @@ let lang = [params.get('lang'), prefs.lang, navigator.language?.slice(0, 2), 'en
 let mode = (params.get('mode') || prefs.mode) === 'minor' ? 'minor' : 'major';
 let tonic = params.get('tonic') || prefs.tonic;
 if (!tonics(mode).includes(tonic)) tonic = 'C';
-const views = { intervals: true, jazz: true, degree: true, function: true, ...prefs.views };
+const views = { intervals: true, jazz: true, degree: true, function: true, sets: true, ...prefs.views };
 let hold = prefs.hold !== false;
 const preset = [
   { notes: [53, 60, 69], tonic: 'C', mode: 'major' },
@@ -198,19 +200,61 @@ function drawHarmony(answer) {
     row.href = refUrl(topic);
     const label = document.createElement('span');
     label.textContent = t(topic);
-    const symbol = document.createElement('span');
-    symbol.className = 'value';
-    symbol.textContent = value || '—';
-    if (chord && !value && topic === 'function') row.title = t('noFunction');
-    symbol.insertAdjacentHTML('beforeend', icon('up-right'));
-    row.append(label, symbol);
+    row.append(label);
+    if (topic === 'degree') {
+      row.classList.add('degree-reading');
+      row.append(degreeRail(chord));
+      row.insertAdjacentHTML('beforeend', icon('up-right'));
+    } else {
+      if (chord && !value && topic === 'function') row.title = t('noFunction');
+      row.append(readingValue(value));
+    }
     $('readings').append(row);
   }
+  if (views.sets) $('readings').append(setReading(referenceNotes));
   $('alternate').hidden = !chord?.alternatives.length;
   $('alternate').textContent = chord?.alternatives.length
     ? `${t('other')} · ${chord.alternatives.join(', ')}`
     : '';
 }
+function readingValue(text) {
+  const value = document.createElement('span');
+  value.className = 'value';
+  value.textContent = text || '—';
+  value.insertAdjacentHTML('beforeend', icon('up-right'));
+  return value;
+}
+
+function setReading(midiNotes) {
+  const set = analyzeSet(midiNotes);
+  const row = referenceLink('', 'sets');
+  row.className = 'reading set-reading';
+  const label = document.createElement('span');
+  label.textContent = t('sets');
+  row.append(label, readingValue(set && `Forte ${set.forte}`));
+  if (!set) return row;
+
+  const values = [
+    `{${set.pitchClasses.join(', ')}}`,
+    `[${set.primeForm.join(', ')}]`,
+    set.intervalClasses.length ? `{${set.intervalClasses.join(', ')}}` : '∅',
+    `⟨${set.intervalVector.join(', ')}⟩`,
+  ];
+  const facts = document.createElement('span');
+  facts.className = 'set-facts';
+  t('setFields').forEach(([short, full], i) => {
+    const field = document.createElement('span');
+    const term = document.createElement('abbr');
+    term.textContent = short;
+    term.title = full;
+    term.setAttribute('aria-label', full);
+    field.append(term, document.createTextNode(' ' + values[i]));
+    facts.append(field);
+  });
+  row.append(facts);
+  return row;
+}
+
 function drawIntervals({ notes, intervals }, pending) {
   const target = $('intervals');
   target.replaceChildren();
