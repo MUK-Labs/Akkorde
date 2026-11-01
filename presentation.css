@@ -106,7 +106,6 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, var(--circle-size));
   gap: clamp(10px, 1.4vw, 32px);
-  align-items: center;
 }
 .presenting .staff-column {
   min-width: 0;
