@@ -57,3 +57,5 @@ The site consists of static HTML, CSS, SVG and native JavaScript modules. There 
 - The recognition vocabulary and spelling rules live in `theory.mjs`. Staff engraving lives in `score.mjs` and device handling in `midi.mjs`.
 
 MIDI chord identification was inspired by [Chordcat](https://github.com/shriramters/chordcat). The notation renderer embeds a small set of [Bravura](https://github.com/steinbergmedia/bravura) glyph outlines. Their SIL Open Font License and copyright notice are included in `score.mjs`.
+
+## [ToDo](https://trello.com/c/PzBAhoBH/122-%F0%9F%95%B9-akkorde)
