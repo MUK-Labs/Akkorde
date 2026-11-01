@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MidiInput } from '../midi.mjs';
+import { ReleaseVoicing } from '../release-voicing.mjs';
 
 function rig() {
   const port = (id) => ({ id, name: id, state: 'connected' });
@@ -111,4 +112,46 @@ test('click can retry after denial, and missing Web MIDI reports unsupported', a
   browser.requestMIDIAccess = async () => ({ inputs: new Map() });
   await midi.connect();
   assert.equal(statuses.at(-1), 'no-inputs');
+});
+
+test('the last finger releases a complete voicing even with the damper down', async () => {
+  const { a, b, midi, send } = rig();
+  const reveal = new ReleaseVoicing();
+  let sounding;
+  midi.onNotes = (notes, held) => {
+    sounding = notes;
+    reveal.update(held);
+  };
+  await midi.connect();
+  send(a, 0xb0, 64, 127);
+  for (const note of [53, 57, 60]) send(a, 0x90, note, 90);
+  send(b, 0x92, 60, 90); // Another performer still holds middle C.
+  for (const note of [60, 53, 57]) send(a, 0x80, note, 0);
+  assert.deepEqual(reveal.held, [60]);
+  send(b, 0x92, 60, 0); // Zero velocity counts as note-off.
+  assert.deepEqual(reveal.held, []);
+  assert.deepEqual(reveal.notes, [53, 57, 60]);
+  assert.deepEqual(sounding, [53, 57, 60]);
+
+  // Reattacking already sustained A starts a new question even though the
+  // sounding pitch collection has not changed yet.
+  for (const note of [57, 61, 64]) send(a, 0x90, note, 100);
+  assert.deepEqual(sounding, [53, 57, 60, 61, 64]);
+  for (const note of [61, 64, 57]) send(a, 0x80, note, 0);
+  assert.deepEqual(reveal.held, []);
+  assert.deepEqual(reveal.notes, [57, 61, 64]);
+  send(a, 0xb0, 64, 0);
+  assert.deepEqual(sounding, []);
+  assert.deepEqual(reveal.notes, [57, 61, 64]);
+});
+
+test('release tails preserve the last attacked voicing across changes of fingers', () => {
+  const reveal = new ReleaseVoicing();
+  for (const keys of [[60], [60, 64], [60, 64, 67], [60, 64], [60, 64, 69], [60], []]) {
+    reveal.update(keys);
+  }
+  assert.deepEqual(reveal.notes, [60, 64, 69]);
+  assert.deepEqual(reveal.held, []);
+  reveal.clear();
+  assert.deepEqual(reveal.notes, []);
 });

@@ -9,7 +9,15 @@
       content="A live harmony studio for MIDI and on-screen piano. Explore intervals, jazz chord symbols, scale degrees and harmonic functions in German, English and Spanish."
     />
     <link rel="icon" href="./mark.svg" type="image/svg+xml" />
+    <script>
+      document.documentElement.classList.toggle(
+        'presenting',
+        new URLSearchParams(location.search).get('presentation') === '1',
+      );
+    </script>
     <link rel="stylesheet" href="./studio.css" />
+    <link rel="stylesheet" href="./circle.css" />
+    <link rel="stylesheet" href="./presentation.css" />
     <title>Akkorde · MUK Labs</title>
   </head>
   <body>
@@ -31,7 +39,12 @@
             <circle cx="16.6" cy="11" r="1.1" />
           </g>
         </symbol>
-        <symbol id="ico-down" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" /></symbol>
+        <symbol id="ico-present" viewBox="0 0 24 24">
+          <path d="M3 4h18M5 4v11h14V4m-7 11v5m-4 0 4-3 4 3" />
+        </symbol>
+        <symbol id="ico-fullscreen" viewBox="0 0 24 24">
+          <path d="M4 9V4h5m6 0h5v5m0 6v5h-5m-6 0H4v-5" />
+        </symbol>
         <symbol id="ico-up-right" viewBox="0 0 24 24"><path d="M6 18 18 6M8 6h10v10" /></symbol>
         <symbol id="ico-sliders" viewBox="0 0 24 24">
           <path d="M3 7h8m4 0h6M3 17h3m4 0h11" />
@@ -100,15 +113,17 @@
               <b>01</b>
               <h2 data-i="staff">Grand staff</h2>
             </div>
-            <label class="key-control"
-              ><span data-i="key">Key</span
-              ><select id="key" aria-label="Key"></select
-              ><svg class="icon"><use href="#ico-down" /></svg
-            ></label>
           </div>
-          <div class="score-area"><svg id="score" xmlns="http://www.w3.org/2000/svg" role="img"></svg></div>
-          <div class="score-caption">
-            <span class="input-badge" id="source"></span><span id="note-list"></span>
+          <div class="notation-body">
+            <div class="staff-column">
+              <div class="score-area">
+                <svg id="score" xmlns="http://www.w3.org/2000/svg" role="img"></svg>
+              </div>
+              <div class="score-caption">
+                <span class="input-badge" id="source"></span><span id="note-list"></span>
+              </div>
+            </div>
+            <div id="circle"></div>
           </div>
           <div id="interval-strip" class="interval-strip">
             <div class="strip-heading">
@@ -124,19 +139,45 @@
               <b>02</b>
               <h2 id="reading-title" data-i="reading">Harmonic analysis</h2>
             </div>
-            <details class="display">
-              <summary id="display-summary" aria-label="Display options">
-                <svg class="icon"><use href="#ico-sliders" /></svg>
-              </summary>
-              <div class="display-list">
-                <strong data-i="display">Show analyses</strong
-                ><label><input type="checkbox" data-view="intervals" /><span data-i="intervals"></span></label
-                ><label><input type="checkbox" data-view="jazz" /><span data-i="jazz"></span></label
-                ><label><input type="checkbox" data-view="degree" /><span data-i="degree"></span></label
-                ><label><input type="checkbox" data-view="function" /><span data-i="function"></span></label>
-              </div>
-            </details>
+            <div class="class-tools">
+              <div id="class-midi"></div>
+              <button
+                id="presentation-toggle"
+                class="class-action"
+                type="button"
+                aria-label="Presentation mode"
+                aria-pressed="false"
+              >
+                <svg class="icon" aria-hidden="true"><use href="#ico-present" /></svg>
+              </button>
+              <button
+                id="fullscreen-toggle"
+                class="class-action"
+                type="button"
+                aria-label="Fullscreen"
+                aria-pressed="false"
+              >
+                <svg class="icon" aria-hidden="true"><use href="#ico-fullscreen" /></svg>
+              </button>
+              <span id="fullscreen-message" class="sr" role="status"></span>
+              <details class="display">
+                <summary id="display-summary" aria-label="Display options">
+                  <svg class="icon"><use href="#ico-sliders" /></svg>
+                </summary>
+                <div class="display-list">
+                  <strong data-i="display">Show analyses</strong
+                  ><label
+                    ><input type="checkbox" data-view="intervals" /><span data-i="intervals"></span></label
+                  ><label><input type="checkbox" data-view="jazz" /><span data-i="jazz"></span></label
+                  ><label><input type="checkbox" data-view="degree" /><span data-i="degree"></span></label
+                  ><label
+                    ><input type="checkbox" data-view="function" /><span data-i="function"></span
+                  ></label>
+                </div>
+              </details>
+            </div>
           </div>
+          <p id="reveal-status" class="reveal-status" role="status" hidden></p>
           <div class="chord-block">
             <a id="chord-name" href="./reference.html"></a>
             <div id="quality"></div>

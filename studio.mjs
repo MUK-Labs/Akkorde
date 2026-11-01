@@ -1,10 +1,14 @@
 import { analyze, tonics, keyName } from './theory.mjs';
+import { createCircle } from './circle.mjs';
+import { initPresentation } from './presentation.mjs';
 import { renderScore } from './score.mjs';
 import { MidiInput } from './midi.mjs';
+import { ReleaseVoicing } from './release-voicing.mjs';
 import { strings } from './strings.mjs';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
+const release = ['1', '2'].includes(params.get('reveal')) ? new ReleaseVoicing() : null;
 let prefs = {};
 try {
   prefs = JSON.parse(localStorage.getItem('akkorde.studio')) || {};
@@ -29,16 +33,21 @@ const loaded = params
   .filter((n) => /^\d{1,3}$/.test(n))
   .map(Number)
   .filter((n) => n <= 127);
-let sample = loaded?.length ? { notes: [...new Set(loaded)].sort((a, b) => a - b) } : preset[0];
+let sample = loaded?.length
+  ? { notes: [...new Set(loaded)].sort((a, b) => a - b) }
+  : release
+    ? null
+    : preset[0];
 const latched = new Set(),
   pressed = new Map();
 let hardware = [],
+  hardwareHeld = [],
   live = [],
   last = [],
   captureTimer,
   expanded = false,
   base = 48,
-  analysis;
+  referenceNotes = [];
 let midiStatus = { state: 'idle', ports: [], selected: '' };
 let audio,
   soundOn = false;
@@ -72,8 +81,10 @@ function refUrl(topic, pair) {
     topic,
     tonic,
     mode,
-    notes: analysis.notes.map((n) => n.midi).join(','),
+    notes: referenceNotes.join(','),
   });
+  if (document.documentElement.classList.contains('presenting')) query.set('presentation', '1');
+  if (release) query.set('reveal', params.get('reveal'));
   if (pair) {
     query.set('from', pair.from);
     query.set('to', pair.to);
@@ -90,9 +101,17 @@ function pitchLabel(note) {
   return note.name + note.octave;
 }
 function redraw() {
-  const current = sample?.notes || (live.length ? live : last);
-  analysis = analyze(current, tonic, mode, lang);
-  const { notes, intervals, chord } = analysis;
+  const remembered = release?.notes || last;
+  const current = sample?.notes || (live.length ? live : remembered);
+  const notation = analyze(current, tonic, mode, lang);
+  const pending = Boolean(release?.held.length);
+  const answer = pending
+    ? null
+    : release && !sample && live.length
+      ? analyze(remembered, tonic, mode, lang)
+      : notation;
+  referenceNotes = answer?.notes.map((n) => n.midi) || [];
+  const { notes } = notation;
   renderScore($('score'), notes, { tonic, mode, lang });
   $('guide-link').href = refUrl('guide');
   const badge = sample
@@ -101,13 +120,48 @@ function redraw() {
       : 'loaded'
     : live.length
       ? 'live'
-      : last.length
+      : remembered.length
         ? 'last'
         : 'waiting';
   $('source').textContent = t(badge);
   $('source').dataset.example = String(Boolean(sample));
   $('note-list').textContent = notes.map(pitchLabel).join('  ·  ');
+  const message = $('reveal-status');
+  message.hidden = !pending;
+  if (pending && message.textContent !== t('releaseToReveal')) message.textContent = t('releaseToReveal');
+  updateCircle({ tonic, mode, lang, chord: answer?.chord || null });
+  drawHarmony(answer);
+  // Interval pairs can serve as clues for a chord. A single interval is the
+  // entire solution to a dyad, so wait until release to name it.
+  drawIntervals(answer || notation, pending);
+  const lit = new Map((sample || live.length ? notes : []).map((n) => [n.midi, pitchLabel(n)]));
+  for (const [n, button] of keyMap) {
+    const label = button.dataset.label;
+    button.setAttribute('aria-pressed', String(lit.has(n)));
+    button.firstElementChild.textContent = lit.get(n) || (n % 12 === 0 ? label : '');
+  }
+  $('clear').disabled = !sample && !live.length && !remembered.length;
+  [...$('examples').children].forEach((b, i) =>
+    b.setAttribute(
+      'aria-pressed',
+      String(sample === preset[i] && mode === preset[i].mode && tonic === preset[i].tonic),
+    ),
+  );
+}
+function drawHarmony(answer) {
   const hero = $('chord-name');
+  hero.parentElement.hidden = !answer;
+  $('readings').hidden = !answer;
+  if (!answer) {
+    hero.textContent = '';
+    hero.removeAttribute('href');
+    $('quality').textContent = '';
+    $('readings').replaceChildren();
+    $('alternate').hidden = true;
+    $('alternate').textContent = '';
+    return;
+  }
+  const { notes, intervals, chord } = answer;
   const chordTitle = chord && (['major', 'minor'].includes(chord.id) ? chord.name : chord.jazz);
   hero.textContent =
     chordTitle ||
@@ -156,11 +210,13 @@ function redraw() {
   $('alternate').textContent = chord?.alternatives.length
     ? `${t('other')} · ${chord.alternatives.join(', ')}`
     : '';
-  $('interval-strip').hidden = !views.intervals;
-  if (views.intervals) {
+}
+function drawIntervals({ notes, intervals }, pending) {
+  const target = $('intervals');
+  target.replaceChildren();
+  $('interval-strip').hidden = !views.intervals || (pending && notes.length < 3);
+  if (!$('interval-strip').hidden) {
     $('interval-count').textContent = intervals.length ? `(${intervals.length})` : '';
-    const target = $('intervals');
-    target.replaceChildren();
     if (!intervals.length) {
       const span = document.createElement('span');
       span.className = 'no-interval';
@@ -168,7 +224,11 @@ function redraw() {
       target.append(span);
     }
     for (const pair of expanded ? intervals : intervals.slice(0, 3)) {
-      const link = referenceLink(pair.label, 'intervals', pair);
+      const link = pending ? document.createElement('span') : referenceLink(pair.label, 'intervals', pair);
+      if (pending) {
+        link.className = 'interval-clue';
+        link.textContent = pair.label;
+      }
       const pairNames = [pair.from, pair.to]
         .map((p) => pitchLabel(notes.find((n) => n.midi === p)))
         .join(' – ');
@@ -188,19 +248,6 @@ function redraw() {
       target.append(show);
     }
   }
-  const lit = new Map((sample || live.length ? notes : []).map((n) => [n.midi, pitchLabel(n)]));
-  for (const [n, button] of keyMap) {
-    const label = button.dataset.label;
-    button.setAttribute('aria-pressed', String(lit.has(n)));
-    button.firstElementChild.textContent = lit.get(n) || (n % 12 === 0 ? label : '');
-  }
-  $('clear').disabled = !sample && !live.length && !last.length;
-  [...$('examples').children].forEach((b, i) =>
-    b.setAttribute(
-      'aria-pressed',
-      String(sample === preset[i] && mode === preset[i].mode && tonic === preset[i].tonic),
-    ),
-  );
 }
 function midiUI() {
   const { state, ports, selected } = midiStatus;
@@ -253,7 +300,6 @@ function updateUI() {
   for (const el of document.querySelectorAll('[data-view]')) el.checked = views[el.dataset.view];
   for (const [id, key] of [
     ['languages', 'language'],
-    ['key', 'key'],
     ['display-summary', 'display'],
     ['octave-down', 'lower'],
     ['octave-up', 'higher'],
@@ -262,16 +308,7 @@ function updateUI() {
     $(id).setAttribute('aria-label', t(key));
     $(id).title = t(key);
   }
-  $('key').replaceChildren();
-  for (const m of ['major', 'minor']) {
-    const group = document.createElement('optgroup');
-    group.label = t(m);
-    for (const k of tonics(m)) {
-      group.append(new Option(keyName(k, m, lang), `${k}:${m}`));
-    }
-    $('key').append(group);
-  }
-  $('key').value = `${tonic}:${mode}`;
+  refreshPresentation();
   $('hold').setAttribute('aria-pressed', String(hold));
   $('piano-hint').textContent = t(hold ? 'latchHint' : 'playHint');
   $('sound').setAttribute('aria-pressed', String(soundOn));
@@ -330,8 +367,10 @@ function fitPitches(notes) {
 function sync(remember = true) {
   clearTimeout(captureTimer);
   const next = [...new Set([...latched, ...pressed.values(), ...hardware])].sort((a, b) => a - b);
-  if (next.length) {
-    sample = null;
+  if (next.length) sample = null;
+  if (release) {
+    release.update([...latched, ...pressed.values(), ...hardwareHeld]);
+  } else if (next.length) {
     if (next.some((n) => !live.includes(n))) last = next;
     else
       captureTimer = setTimeout(() => {
@@ -344,7 +383,10 @@ function sync(remember = true) {
   redraw();
 }
 const midi = new MidiInput(
-  (notes) => {
+  (notes, held) => {
+    // Ordinary live analysis only follows changes to the sounding pitches.
+    if (!release && notes.length === hardware.length && notes.every((n, i) => n === hardware[i])) return;
+    hardwareHeld = held;
     hardware = notes;
     fitPitches(notes);
     sync();
@@ -359,6 +401,8 @@ function clearNotes() {
   latched.clear();
   pressed.clear();
   hardware = [];
+  hardwareHeld = [];
+  release?.clear();
   sample = null;
   last = [];
   midi.clear();
@@ -367,12 +411,14 @@ function clearNotes() {
 $('connect').onclick = () => midi.connect();
 $('ports').onchange = (e) => midi.selectPort(e.target.value);
 $('clear').onclick = clearNotes;
-$('key').onchange = (e) => {
-  [tonic, mode] = e.target.value.split(':');
+const updateCircle = createCircle($('circle'), (selectedTonic, selectedMode) => {
+  tonic = selectedTonic;
+  mode = selectedMode;
   save();
   piano();
   redraw();
-};
+});
+const refreshPresentation = initPresentation(() => lang, redraw);
 $('languages').onclick = (e) => {
   const l = e.target.closest('button')?.dataset.lang;
   if (!l) return;
@@ -459,7 +505,7 @@ window.addEventListener('keyup', (e) => {
 });
 window.addEventListener('blur', () => {
   pressed.clear();
-  if (hardware.length) midi.clear();
+  if (!release && hardware.length) midi.clear();
   sync();
 });
 window.addEventListener('pagehide', () => {
@@ -474,5 +520,5 @@ document.addEventListener('keydown', (e) => {
     $('display-summary').focus();
   }
 });
-fitPitches(sample.notes);
+if (sample) fitPitches(sample.notes);
 updateUI();

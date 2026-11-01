@@ -297,6 +297,9 @@ const notes = params.has('notes')
     ? [60, 63]
     : [53, 57, 60];
 const state = { lang, topic, tonic, mode, notes: notes.join(',') };
+for (const flag of ['presentation', 'reveal']) {
+  if (params.has(flag)) state[flag] = params.get(flag);
+}
 for (const side of ['from', 'to']) {
   if (params.has(side) && notes.includes(Number(params.get(side)))) state[side] = params.get(side);
 }

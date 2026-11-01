@@ -11,7 +11,7 @@ export class MidiInput {
     this.channels = new Map();
     this.selected = '';
     this.state = 'idle';
-    this.lastNotes = '';
+    this.lastNotes = '|';
   }
 
   async connect() {
@@ -83,17 +83,22 @@ export class MidiInput {
 
   emitNotes() {
     const sounding = new Set();
+    const heldKeys = new Set();
     for (const channels of this.channels.values()) {
       for (const { held, sustained } of channels.values()) {
-        for (const note of held.keys()) sounding.add(note);
+        for (const note of held.keys()) {
+          heldKeys.add(note);
+          sounding.add(note);
+        }
         for (const note of sustained) sounding.add(note);
       }
     }
     const notes = [...sounding].sort((a, b) => a - b);
-    const signature = notes.join(',');
+    const down = [...heldKeys].sort((a, b) => a - b);
+    const signature = notes.join(',') + '|' + down.join(',');
     if (signature !== this.lastNotes) {
       this.lastNotes = signature;
-      this.onNotes(notes);
+      this.onNotes(notes, down);
     }
   }
 

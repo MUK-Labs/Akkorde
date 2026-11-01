@@ -97,7 +97,6 @@ button:disabled {
 .primary,
 .section-label,
 .card-head,
-.key-control,
 .input-badge,
 .strip-heading,
 .intervals,
@@ -305,36 +304,29 @@ h1 {
   margin: 0;
   font: inherit;
 }
-.key-control {
-  position: relative;
-  gap: 6px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 0 9px;
-  height: 30px;
-  background: #f6f7f0;
-  font-size: 12px;
-  white-space: nowrap;
+.notation-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(175px, 32%);
+  align-items: center;
+  gap: clamp(8px, 1.3vw, 22px);
+  margin: 3px 0 12px;
 }
-.key-control > span {
-  color: var(--muted);
-  font-size: 11px;
+.staff-column {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
-.key-control select {
-  appearance: none;
-  border: none;
-  background: transparent;
-  font-weight: 650;
-  height: 100%;
-  padding-right: 15px;
-  max-width: 150px;
-}
-.key-control .icon {
-  position: absolute;
-  right: 7px;
-  width: 13px;
-  height: 13px;
-  pointer-events: none;
+.reveal-status {
+  flex: 1;
+  display: grid;
+  align-content: center;
+  margin: 0;
+  padding: 1.5em 0;
+  color: #e3ebd9;
+  font: 400 clamp(22px, 2.2vw, 34px) / 1.25 var(--serif);
+  max-width: 24ch;
 }
 .score-area {
   flex: 1;
@@ -414,6 +406,7 @@ h1 {
   flex-wrap: wrap;
 }
 .intervals a,
+.intervals .interval-clue,
 .intervals button {
   font-size: 11px;
   border: 1px solid #dce1d6;
@@ -800,6 +793,20 @@ footer .icon {
   }
   .piano-tools {
     gap: 6px;
+  }
+}
+@media (min-width: 661px) and (max-width: 900px) {
+  .workspace {
+    grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+  }
+  .notation-body {
+    grid-template-columns: minmax(0, 1fr) minmax(155px, 36%);
+  }
+}
+@media (max-width: 520px) {
+  .notation-body {
+    grid-template-columns: 1fr;
+    gap: 0;
   }
 }
 @media (max-width: 660px) {
